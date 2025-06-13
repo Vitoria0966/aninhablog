@@ -8,107 +8,12 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#ff85a2">
+    <link rel="manifest" href="site.webmanifest">
+    <link rel="apple-touch-icon" href="icon.png">
     <style>
-        .contact-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 60vh;
-            padding: 40px 0;
-        }
         
-        .contact-form {
-            width: 100%;
-            max-width: 600px;
-            background-color: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-        
-        .contact-form h2 {
-            color: #ff85a2;
-            margin-top: 0;
-            margin-bottom: 20px;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-            text-align: left;
-        }
-        
-        .form-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: #555;
-        }
-        
-        .form-input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-family: inherit;
-            font-size: 1em;
-            box-sizing: border-box;
-        }
-        
-        textarea.form-input {
-            height: 150px;
-            resize: vertical;
-        }
-        
-        .submit-btn {
-            background-color: #ff85a2;
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1em;
-            transition: all 0.3s ease;
-            width: 100%;
-            max-width: 200px;
-        }
-        
-        .submit-btn:hover {
-            background-color: #ff6b8b;
-            transform: translateY(-2px);
-        }
-        
-        /* Estilos para validação */
-        .error {
-            color: #e74c3c;
-            font-size: 0.9em;
-            margin-top: 5px;
-            display: none;
-        }
-        
-        .form-input.error-border {
-            border-color: #e74c3c;
-        }
-        
-        .success-message {
-            color: #2ecc71;
-            font-weight: bold;
-            margin-top: 20px;
-            display: none;
-        }
-        @media (max-width: 768px) {
-        .form-group {
-        margin-bottom: 15px;
-        }
-    
-        .form-input, textarea.form-input {
-        font-size: 0.9em;
-        }
-    
-        textarea.form-input {
-        height: 120px;
-        }
-        }
     </style>
 </head>
 <body class="contact-layout">
@@ -169,11 +74,20 @@
             </form>
         </div>
     </main>
+    
+    <!-- Modal de Erro -->
+    <div id="errorModal" class="error-modal">
+        <div class="error-modal-content">
+            <h3>Ops! Algo deu errado</h3>
+            <p id="modalErrorMessage">Por favor, corrija os erros no formulário antes de enviar.</p>
+            <button class="error-modal-btn" id="closeErrorModal">Entendi</button>
+        </div>
+    </div>
    
     
     <footer role="contentinfo">
         <div class="container">
-            <p>&copy; <span id="current-year">2025</span> Blog da Ana - Todos os direitos reservados</p>
+            <p>&copy; <span id="current-year">2025</span> Blog da Ana</p>
         </div>
     </footer>
 
@@ -181,6 +95,24 @@
     <script>
         document.getElementById('current-year').textContent = new Date().getFullYear();
 
+       
+        const errorModal = document.getElementById('errorModal');
+        const modalErrorMessage = document.getElementById('modalErrorMessage');
+        const closeErrorModal = document.getElementById('closeErrorModal');
+        
+        
+        closeErrorModal.addEventListener('click', function() {
+            errorModal.style.display = 'none';
+            document.body.classList.remove('darken-background');
+        });
+        
+        
+        errorModal.addEventListener('click', function(e) {
+            if (e.target === errorModal) {
+                errorModal.style.display = 'none';
+                document.body.classList.remove('darken-background');
+            }
+        });
     
         document.getElementById('contactForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -188,25 +120,47 @@
             
             resetErrors();
             
-          
+           
             const nameValid = validateName();
             const emailValid = validateEmail();
             const phoneValid = validatePhone();
             const messageValid = validateMessage();
             
-            // Se todos os campos forem válidos
+            
             if (nameValid && emailValid && phoneValid && messageValid) {
-                // Aqui você pode adicionar o código para enviar o formulário
-                // Por enquanto, apenas mostra a mensagem de sucesso
+                
                 document.getElementById('successMessage').style.display = 'block';
                 
                 setTimeout(() => {
                     this.reset();
                     document.getElementById('successMessage').style.display = 'none';
                 }, 3000);
+            } else {
+                // Mostrar modal de erro
+                showErrorModal();
             }
         });
         
+        // Função para mostrar o modal de erro
+        function showErrorModal() {
+            // Escurecer o fundo
+            document.body.classList.add('darken-background');
+            
+            // Mostrar modal
+            errorModal.style.display = 'flex';
+            
+            // Coletar todas as mensagens de erro visíveis
+            const errorMessages = Array.from(document.querySelectorAll('.error'))
+                .filter(error => error.style.display === 'block')
+                .map(error => error.textContent);
+            
+            // Definir mensagem do modal
+            if (errorMessages.length > 0) {
+                modalErrorMessage.innerHTML = errorMessages.join('<br>');
+            } else {
+                modalErrorMessage.textContent = 'Por favor, preencha todos os campos corretamente.';
+            }
+        }
        
         function validateName() {
             const nameInput = document.getElementById('name');
@@ -254,7 +208,7 @@
                 return false;
             }
             
-            
+            // Remover todos os caracteres não numéricos
             const cleanPhone = phoneInput.value.replace(/\D/g, '');
             
             if (cleanPhone.length < 10 || cleanPhone.length > 11) {
@@ -282,32 +236,52 @@
             return true;
         }
         
-        
+        // Mostrar erro no campo específico
         function showError(input, errorElement, message) {
             input.classList.add('error-border');
             errorElement.textContent = message;
             errorElement.style.display = 'block';
         }
         
+        // Resetar todos os erros
         function resetErrors() {
-           
+            // Esconder todas as mensagens de erro
             document.querySelectorAll('.error').forEach(error => {
                 error.style.display = 'none';
             });
             
-           
+            // Remover bordas vermelhas
             document.querySelectorAll('.form-input').forEach(input => {
                 input.classList.remove('error-border');
             });
             
-           
+            // Esconder mensagem de sucesso
             document.getElementById('successMessage').style.display = 'none';
         }
         
+        // Validação em tempo real quando o campo perde o foco
         document.getElementById('name').addEventListener('blur', validateName);
         document.getElementById('email').addEventListener('blur', validateEmail);
         document.getElementById('phone').addEventListener('blur', validatePhone);
         document.getElementById('message').addEventListener('blur', validateMessage);
     </script>
+    <script>
+    // Detecta se é mobile e adiciona classe ao body
+    if (/Mobi|Android/i.test(navigator.userAgent)) {
+        document.body.classList.add('mobile-device');
+    }
+    
+    // Evita zoom indesejado em inputs no iOS
+    document.addEventListener('DOMContentLoaded', function() {
+        if (navigator.userAgent.match(/iPhone|iPad|iPod/i)) {
+            var inputs = document.querySelectorAll('input, textarea, select');
+            inputs.forEach(function(input) {
+                input.addEventListener('focus', function() {
+                    document.body.style.zoom = '1';
+                });
+            });
+        }
+    });
+</script>
 </body>
 </html>
